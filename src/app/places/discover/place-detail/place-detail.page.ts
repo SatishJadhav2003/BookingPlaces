@@ -11,31 +11,40 @@ import { CreateBookingComponent } from '../../../bookings/create-booking/create-
   styleUrls: ['./place-detail.page.scss'],
 })
 export class PlaceDetailPage implements OnInit {
-  place:Place;
+  place: Place;
   constructor(
     private navCtrl: NavController,
     private _placesService: PlacesService,
     private route: ActivatedRoute,
-    private modalCtrl:ModalController
+    private modalCtrl: ModalController
   ) {}
 
   ngOnInit() {
-    this.route.paramMap.subscribe((route)=>{
-      if(!route.get('placeId'))
-      {
+    this.route.paramMap.subscribe((route) => {
+      if (!route.get('placeId')) {
         this.navCtrl.navigateBack('/places/tabs/discover');
         return;
+      } else {
+        this.place = this._placesService.getPlace(route.get('placeId'));
       }
-      else
-      {
-       this.place =  this._placesService.getPlace(route.get('placeId'));
-      }
-    })
+    });
   }
   onBookPlace() {
     // this.navCtrl.navigateBack('/places/tabs/discover');
-    this.modalCtrl.create({component:CreateBookingComponent}).then((modalEl)=>{
-      modalEl.present();
-    })
+    this.modalCtrl
+      .create({
+        component: CreateBookingComponent,
+        componentProps: { selectedPlace: this.place },
+      })
+      .then((modalEl) => {
+        modalEl.present();
+        return modalEl.onDidDismiss();
+      })
+      .then((resultData) => {
+        console.log(resultData);
+        if (resultData.role === 'confirm') {
+          confirm("Booked")
+        }
+      });
   }
 }
